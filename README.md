@@ -75,6 +75,37 @@ Total estimated saving for a team of 3 engineers: 8-12 hours per week.
 
 ## How It Works — The Full Flow
 
+```mermaid
+flowchart TD
+    A[Engineer opens Terraform project] --> B[Runs claude]
+    B --> C[Claude reads CLAUDE.md\nKnows project standards instantly]
+    C --> D[Engineer asks for a module]
+    D --> E[Claude reads terraform-generate Skill]
+    E --> F[Generates main.tf + variables.tf + outputs.tf]
+    F --> G[Pre-write Hook fires\nterraform fmt runs automatically]
+    G --> H[Engineer reviews code\nRuns terraform plan locally]
+    H --> I[Opens Pull Request on GitHub]
+    I --> J[GitHub Actions pr.yml triggers]
+    J --> K[fmt check]
+    K --> L[TFLint]
+    L --> M[tfsec security scan]
+    M --> N[terraform plan]
+    N --> O[Claude API reads plan\nWrites plain-English summary]
+    O --> P[Summary posted as PR comment]
+    P --> Q{Team approves?}
+    Q -->|Yes| R[PR merged to main]
+    Q -->|No| S[Engineer fixes issues]
+    S --> I
+    R --> T[GitHub Actions deploy.yml triggers]
+    T --> U[OIDC — temporary credentials\nNo AWS keys stored]
+    U --> V[terraform apply runs in CI]
+    V --> W[Infrastructure live in AWS]
+    W --> X[Every Monday 1am\nDrift detection runs]
+    X --> Y{Drift found?}
+    Y -->|No| Z[No action needed]
+    Y -->|Yes| AA[Claude analyses drift\nCreates GitHub Issue]
+```
+
 When an engineer uses this plugin, here is exactly what happens:
 
 1. Engineer opens their Terraform project and runs claude
