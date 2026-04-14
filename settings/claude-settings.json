@@ -1,0 +1,37 @@
+﻿{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|Create",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-write-fmt.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse#bash": [
+      {
+        "matcher": "git commit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-commit-block-state.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "terraform apply",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-apply-update-docs.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

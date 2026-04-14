@@ -1,21 +1,58 @@
 ﻿#!/bin/bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "Installing DevOps IaC Plugin..."
+
 mkdir -p .claude/skills/terraform-generate .claude/skills/security-review .claude/hooks .github/workflows
+
 cp "$SCRIPT_DIR/skills/terraform-generate/SKILL.md" ".claude/skills/terraform-generate/SKILL.md"
 cp "$SCRIPT_DIR/skills/security-review/SKILL.md" ".claude/skills/security-review/SKILL.md"
 echo "Skills installed"
+
 cp "$SCRIPT_DIR/hooks/"*.sh ".claude/hooks/"
 chmod +x .claude/hooks/*.sh
 echo "Hooks installed"
+
+# Wire hooks into Claude Code settings
+cat > .claude/settings.json << 'EOF'
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|Create",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-write-fmt.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "terraform apply",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-apply-update-docs.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+EOF
+echo "Hooks wired into settings.json"
+
 cp "$SCRIPT_DIR/workflows/"*.yml ".github/workflows/"
 echo "Workflows installed"
+
 if [ ! -f "CLAUDE.md" ]; then
     cp "$SCRIPT_DIR/CLAUDE.md" "CLAUDE.md"
     echo "CLAUDE.md template installed"
 else
     echo "CLAUDE.md already exists - skipping"
 fi
+
 echo ""
 echo "Plugin installed successfully!"
 echo "Next steps:"
